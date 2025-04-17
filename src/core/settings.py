@@ -75,6 +75,10 @@ class Settings(BaseSettings):
 
     OPENWEATHERMAP_API_KEY: SecretStr | None = None
 
+    LANGFUSE_PUBLIC_KEY: SecretStr | None = None
+    LANGFUSE_SECRET_KEY: SecretStr | None = None
+    LANGFUSE_HOST: str | None = None
+
     LANGCHAIN_TRACING_V2: bool = False
     LANGCHAIN_PROJECT: str = "default"
     LANGCHAIN_ENDPOINT: Annotated[str, BeforeValidator(check_str_is_http)] = (
@@ -95,19 +99,24 @@ class Settings(BaseSettings):
     POSTGRES_PORT: int | None = None
     POSTGRES_DB: str | None = None
     POSTGRES_POOL_SIZE: int = Field(
-        default=10, description="Maximum number of connections in the pool"
+        default=10,
+        description="Maximum number of connections in the pool"
     )
     POSTGRES_MIN_SIZE: int = Field(
-        default=3, description="Minimum number of connections in the pool"
+        default=3,
+        description="Minimum number of connections in the pool"
     )
-    POSTGRES_MAX_IDLE: int = Field(default=5, description="Maximum number of idle connections")
+    POSTGRES_MAX_IDLE: int = Field(
+        default=5,
+        description="Maximum number of idle connections")
 
     # Azure OpenAI Settings
     AZURE_OPENAI_API_KEY: SecretStr | None = None
     AZURE_OPENAI_ENDPOINT: str | None = None
     AZURE_OPENAI_API_VERSION: str = "2024-02-15-preview"
     AZURE_OPENAI_DEPLOYMENT_MAP: dict[str, str] = Field(
-        default_factory=dict, description="Map of model names to Azure deployment IDs"
+        default_factory=dict,
+        description="Map of model names to Azure deployment IDs"
     )
 
     def model_post_init(self, __context: Any) -> None:
@@ -184,13 +193,16 @@ class Settings(BaseSettings):
                                 self.AZURE_OPENAI_DEPLOYMENT_MAP
                             )
                         except Exception as e:
-                            raise ValueError(f"Invalid AZURE_OPENAI_DEPLOYMENT_MAP JSON: {e}")
+                            raise ValueError(
+                                f"Invalid AZURE_OPENAI_DEPLOYMENT_MAP JSON: {e}")
 
                     # Validate required deployments exist
                     required_models = {"gpt-4o", "gpt-4o-mini"}
-                    missing_models = required_models - set(self.AZURE_OPENAI_DEPLOYMENT_MAP.keys())
+                    missing_models = required_models - set(
+                        self.AZURE_OPENAI_DEPLOYMENT_MAP.keys())
                     if missing_models:
-                        raise ValueError(f"Missing required Azure deployments: {missing_models}")
+                        raise ValueError(
+                            f"Missing required Azure deployments: {missing_models}")
                 case _:
                     raise ValueError(f"Unknown provider: {provider}")
 

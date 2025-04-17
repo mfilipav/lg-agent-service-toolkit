@@ -52,3 +52,7 @@ builder.add_node(node_c)
 # NOTE: there are no edges between nodes A, B and C!
 
 command_agent = builder.compile()
+# Call "with_config" from the compiled graph.
+# It returns a "CompiledGraph", similar to "compile", but with callbacks included.
+# This enables automatic graph tracing without needing to add callbacks manually every time.
+# command_agent = builder.compile().with_config({"callbacks": [langfuse_handler]})

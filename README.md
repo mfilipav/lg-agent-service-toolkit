@@ -19,7 +19,7 @@ This project offers a template for you to easily build and run your own agents u
 
 ### Quickstart
 
-Run directly in python
+#### Run directly in Python:
 
 ```sh
 # At least one LLM API key is required
@@ -44,7 +44,7 @@ source .venv/bin/activate
 streamlit run src/streamlit_app.py
 ```
 
-Run with docker:
+#### Run with docker:
 ```sh
 echo 'OPENAI_API_KEY=your_openai_api_key' >> .env
 docker compose watch
@@ -196,34 +196,40 @@ You can also run the agent service and the Streamlit app locally without Docker,
 
 4. Open your browser and navigate to the URL provided by Streamlit (usually `http://localhost:8501`).
 
-## Projects built with or inspired by agent-service-toolkit
 
-The following are a few of the public projects that drew code or inspiration from this repo.
+## LLMOps with Langfuse
+We need to find an OSS alternative to Langsmith. Langfuse is one option.
 
-- **[alexrisch/agent-web-kit](https://github.com/alexrisch/agent-web-kit)** A Next.JS frontend for agent-service-toolkit
-- **[raushan-in/dapa](https://github.com/raushan-in/dapa)** - Digital Arrest Protection App (DAPA) enables users to report financial scams and frauds efficiently via a user-friendly platform.
+Inspired by:
+* https://langfuse.com/docs/integrations/langchain/example-python-langgraph
+* https://langfuse.com/docs/integrations/langchain/example-langgraph-agents
 
-**Please create a pull request editing the README or open a discussion with any new ones to be added!** Would love to include more projects.
+<img src="media/langfuse.png" width="1000">
+
+### Langfuse setup
+In a separate env/terminal window follow https://langfuse.com/self-hosting/local to download Langfuse, up docker container and start open port http://localhost:3000
+
+Once at `3000` port, langfuse app pops up, register with email, create a new organization and a new project.
+Get langchain private and public keys (for free) for the particular project.
+
+Add the following info to `.env` file:
+```
+LANGFUSE_PUBLIC_KEY=pk-lf-***
+LANGFUSE_SECRET_KEY=sk-lf-***
+LANGFUSE_HOST=http://localhost:3000
+```
+
+Next, follow https://langfuse.com/docs/integrations/langchain/example-python-langgraph to install langfuse, set langchain private and public keys (for free), and instrumentalize the LG Agents.
+
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request. Currently the tests need to be run using the local development without Docker setup. To run the tests for the agent service:
-
-1. Ensure you're in the project root directory and have activated your virtual environment.
-
-2. Install the development dependencies and pre-commit hooks:
-
-   ```sh
-   pip install uv
-   uv sync --frozen
-   pre-commit install
-   ```
-
-3. Run the tests using pytest:
+1. Run the tests using pytest:
 
    ```sh
    pytest
    ```
+2. make a PR
 
 ## License
 

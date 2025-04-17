@@ -18,6 +18,8 @@ from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command, Interrupt
 from langsmith import Client as LangsmithClient
 
+from langfuse.callback import CallbackHandler
+
 from agents import DEFAULT_AGENT, get_agent, get_all_agent_info
 from core import settings
 from memory import initialize_database
@@ -39,6 +41,13 @@ from service.utils import (
 
 warnings.filterwarnings("ignore", category=LangChainBetaWarning)
 logger = logging.getLogger(__name__)
+
+# Initialize Langfuse CallbackHandler for Langchain (tracing)
+langfuse_handler = CallbackHandler(
+    public_key=settings.LANGFUSE_PUBLIC_KEY.get_secret_value(),
+    secret_key=settings.LANGFUSE_SECRET_KEY.get_secret_value(),
+    host=settings.LANGFUSE_HOST
+)
 
 
 def verify_bearer(
@@ -151,7 +160,16 @@ async def invoke(user_input: UserInput, agent_id: str = DEFAULT_AGENT) -> ChatMe
     agent: CompiledStateGraph = get_agent(agent_id)
     kwargs, run_id = await _handle_input(user_input, agent)
     try:
-        response_events = await agent.ainvoke(**kwargs, stream_mode=["updates", "values"])
+        # update config.callbacks with langfuse handler
+        config = kwargs.pop("config", {})
+        print("DEBUG invoke config=", config)
+        config.update({"callbacks": [langfuse_handler]})
+
+        response_events = await agent.ainvoke(
+            config=config,
+            **kwargs,
+            stream_mode=["updates", "values"]
+        )
         response_type, response = response_events[-1]
         if response_type == "values":
             # Normal response, the agent completed successfully
@@ -184,9 +202,15 @@ async def message_generator(
     kwargs, run_id = await _handle_input(user_input, agent)
 
     try:
+        config = kwargs.pop("config", {})
+        print("DEBUG message_generator config=", config)
+        config.update({"callbacks": [langfuse_handler]})
+
         # Process streamed events from the graph and yield messages over the SSE stream.
         async for stream_event in agent.astream(
-            **kwargs, stream_mode=["updates", "messages", "custom"]
+            config=config,
+            **kwargs,
+            stream_mode=["updates", "messages", "custom"]
         ):
             if not isinstance(stream_event, tuple):
                 continue
