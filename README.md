@@ -25,20 +25,26 @@ Run directly in python
 # At least one LLM API key is required
 echo 'OPENAI_API_KEY=your_openai_api_key' >> .env
 
-# uv is recommended but "pip install ." also works
+# venv installation: venv and pip
+python -m venv venv
+python -m pip install -e .
+
+# (venv alternative: uv)
 pip install uv
 uv sync --frozen
 # "uv sync" creates .venv automatically
+
+
+# shell 1: run service
 source .venv/bin/activate
 python src/run_service.py
 
-# In another shell
+# shell 2: run streamlit app
 source .venv/bin/activate
 streamlit run src/streamlit_app.py
 ```
 
-Run with docker
-
+Run with docker:
 ```sh
 echo 'OPENAI_API_KEY=your_openai_api_key' >> .env
 docker compose watch
