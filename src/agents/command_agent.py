@@ -9,13 +9,12 @@ from langgraph.types import Command
 class AgentState(MessagesState, total=False):
     """`total=False` is PEP589 specs.
 
-    documentation: https://typing.readthedocs.io/en/latest/spec/typeddict.html#totality
+    documentation:
+    https://typing.readthedocs.io/en/latest/spec/typeddict.html#totality
     """
 
 
 # Define the nodes
-
-
 def node_a(state: AgentState) -> Command[Literal["node_b", "node_c"]]:
     print("Called A")
     value = random.choice(["a", "b"])
@@ -25,7 +24,8 @@ def node_a(state: AgentState) -> Command[Literal["node_b", "node_c"]]:
     else:
         goto = "node_c"
 
-    # note how Command allows you to BOTH update the graph state AND route to the next node
+    # note how Command allows you to BOTH update the graph state
+    # AND route to the next node
     return Command(
         # this is the state update
         update={"messages": [AIMessage(content=f"Hello {value}")]},
@@ -52,7 +52,9 @@ builder.add_node(node_c)
 # NOTE: there are no edges between nodes A, B and C!
 
 command_agent = builder.compile()
+# TODO: Langfuse
 # Call "with_config" from the compiled graph.
-# It returns a "CompiledGraph", similar to "compile", but with callbacks included.
-# This enables automatic graph tracing without needing to add callbacks manually every time.
+# It returns a "CompiledGraph", similar to "compile",
+# but with callbacks included. This enables automatic graph tracing
+# without needing to add callbacks manually every time.
 # command_agent = builder.compile().with_config({"callbacks": [langfuse_handler]})

@@ -15,9 +15,12 @@ class SafetyAssessment(Enum):
 
 
 class LlamaGuardOutput(BaseModel):
-    safety_assessment: SafetyAssessment = Field(description="The safety assessment of the content.")
+    safety_assessment: SafetyAssessment = Field(
+        description="The safety assessment of the content."
+    )
     unsafe_categories: list[str] = Field(
-        description="If content is unsafe, the list of unsafe categories.", default=[]
+        description="If content is unsafe, the list of unsafe categories.",
+        default=[]
     )
 
 
@@ -38,7 +41,9 @@ unsafe_content_categories = {
     "S14": "Code Interpreter Abuse.",
 }
 
-categories_str = "\n".join([f"{k}: {v}" for k, v in unsafe_content_categories.items()])
+categories_str = "\n".join(
+    [f"{k}: {v}" for k, v in unsafe_content_categories.items()]
+)
 
 llama_guard_instructions = f"""
 Task: Check if there is unsafe content in '{{role}}' messages in conversations according to our safety policy with the below categories.
@@ -66,7 +71,9 @@ def parse_llama_guard_output(output: str) -> LlamaGuardOutput:
         return LlamaGuardOutput(safety_assessment=SafetyAssessment.ERROR)
     try:
         categories = parsed_output[1].split(",")
-        readable_categories = [unsafe_content_categories[c.strip()].strip(".") for c in categories]
+        readable_categories = [
+            unsafe_content_categories[c.strip()].strip(".") for c in categories
+        ]
         return LlamaGuardOutput(
             safety_assessment=SafetyAssessment.UNSAFE,
             unsafe_categories=readable_categories,
@@ -81,7 +88,9 @@ class LlamaGuard:
             print("GROQ_API_KEY not set, skipping LlamaGuard")
             self.model = None
             return
-        self.model = get_model(GroqModelName.LLAMA_GUARD_3_8B).with_config(tags=["skip_stream"])
+        self.model = get_model(
+            GroqModelName.LLAMA_GUARD_3_8B
+        ).with_config(tags=["skip_stream"])
         self.prompt = PromptTemplate.from_template(llama_guard_instructions)
 
     def _compile_prompt(self, role: str, messages: list[AnyMessage]) -> str:
@@ -90,7 +99,9 @@ class LlamaGuard:
             f"{role_mapping[m.type]}: {m.content}" for m in messages if m.type in ["ai", "human"]
         ]
         conversation_history = "\n\n".join(messages_str)
-        return self.prompt.format(role=role, conversation_history=conversation_history)
+        return self.prompt.format(
+            role=role, conversation_history=conversation_history
+        )
 
     def invoke(self, role: str, messages: list[AnyMessage]) -> LlamaGuardOutput:
         if self.model is None:
@@ -103,19 +114,23 @@ class LlamaGuard:
         if self.model is None:
             return LlamaGuardOutput(safety_assessment=SafetyAssessment.SAFE)
         compiled_prompt = self._compile_prompt(role, messages)
-        result = await self.model.ainvoke([HumanMessage(content=compiled_prompt)])
+        result = await self.model.ainvoke(
+            [HumanMessage(content=compiled_prompt)]
+        )
         return parse_llama_guard_output(result.content)
 
 
 if __name__ == "__main__":
     llama_guard = LlamaGuard()
     output = llama_guard.invoke(
-        "Agent",
-        [
-            HumanMessage(content="What's a good way to harm an animal?"),
+        role="Agent",
+        messages=[
+            HumanMessage(
+                content="What's a good way to harm an animal?"
+            ),
             AIMessage(
                 content="There are many ways to harm animals, but some include hitting them with a stick, throwing rocks at them, or poisoning them."
             ),
         ],
     )
-    print(output)
+    print("LlamaGuard's output: ", output)

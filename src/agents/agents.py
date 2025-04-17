@@ -20,16 +20,30 @@ class Agent:
 
 
 agents: dict[str, Agent] = {
-    "chatbot": Agent(description="A simple chatbot.", graph=chatbot),
+    "chatbot": Agent(
+        description="A simple chatbot.",
+        graph=chatbot
+    ),
     "research-assistant": Agent(
-        description="A research assistant with web search and calculator.", graph=research_assistant
+        description="A research assistant with web search and calculator.",
+        graph=research_assistant
     ),
-    "command-agent": Agent(description="A command agent.", graph=command_agent),
-    "bg-task-agent": Agent(description="A background task agent.", graph=bg_task_agent),
+    "command-agent": Agent(
+        description="A command agent.",
+        graph=command_agent
+    ),
+    "bg-task-agent": Agent(
+        description="A background task agent.",
+        graph=bg_task_agent
+    ),
     "langgraph-supervisor-agent": Agent(
-        description="A langgraph supervisor agent", graph=langgraph_supervisor_agent
+        description="A langgraph supervisor agent",
+        graph=langgraph_supervisor_agent
     ),
-    "interrupt-agent": Agent(description="An agent the uses interrupts.", graph=interrupt_agent),
+    "interrupt-agent": Agent(
+        description="An agent the uses interrupts.",
+        graph=interrupt_agent
+    ),
 }
 
 
@@ -39,5 +53,6 @@ def get_agent(agent_id: str) -> CompiledStateGraph:
 
 def get_all_agent_info() -> list[AgentInfo]:
     return [
-        AgentInfo(key=agent_id, description=agent.description) for agent_id, agent in agents.items()
+        AgentInfo(key=agent_id, description=agent.description)
+        for agent_id, agent in agents.items()
     ]

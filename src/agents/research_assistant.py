@@ -123,7 +123,9 @@ def check_safety(state: AgentState) -> Literal["unsafe", "safe"]:
 
 
 agent.add_conditional_edges(
-    "guard_input", check_safety, {"unsafe": "block_unsafe_content", "safe": "model"}
+    source="guard_input",
+    path=check_safety,
+    path_map={"unsafe": "block_unsafe_content", "safe": "model"}
 )
 
 # Always END after blocking unsafe content
@@ -143,6 +145,10 @@ def pending_tool_calls(state: AgentState) -> Literal["tools", "done"]:
     return "done"
 
 
-agent.add_conditional_edges("model", pending_tool_calls, {"tools": "tools", "done": END})
+agent.add_conditional_edges(
+    source="model",
+    path=pending_tool_calls,
+    path_map={"tools": "tools", "done": END}
+)
 
 research_assistant = agent.compile(checkpointer=MemorySaver())
