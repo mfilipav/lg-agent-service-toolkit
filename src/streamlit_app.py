@@ -1,12 +1,12 @@
 import asyncio
 import os
 import urllib.parse
+import uuid
 from collections.abc import AsyncGenerator
 
 import streamlit as st
 from dotenv import load_dotenv
 from pydantic import ValidationError
-from streamlit.runtime.scriptrunner import get_script_run_ctx
 
 from client import AgentClient, AgentClientError
 from schema import ChatHistory, ChatMessage
@@ -70,7 +70,7 @@ async def main() -> None:
     if "thread_id" not in st.session_state:
         thread_id = st.query_params.get("thread_id")
         if not thread_id:
-            thread_id = get_script_run_ctx().session_id
+            thread_id = str(uuid.uuid4())
             messages = []
         else:
             try:
@@ -84,8 +84,16 @@ async def main() -> None:
     # Config options
     with st.sidebar:
         st.header(f"{APP_ICON} {APP_TITLE}")
+
         ""
         "Full toolkit for running an AI agent service built with LangGraph, FastAPI and Streamlit"
+        ""
+
+        if st.button(":material/chat: New Chat", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.thread_id = str(uuid.uuid4())
+            st.rerun()
+
         with st.popover(":material/settings: Settings", use_container_width=True):
             model_idx = agent_client.info.models.index(agent_client.info.default_model)
             model = st.selectbox("LLM to use", options=agent_client.info.models, index=model_idx)

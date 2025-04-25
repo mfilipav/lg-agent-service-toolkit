@@ -1,8 +1,6 @@
 import json
 import logging
 import warnings
-from asyncio import CancelledError
-from builtins import GeneratorExit
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Annotated, Any
@@ -14,7 +12,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from langchain_core._api import LangChainBetaWarning
 from langchain_core.messages import AIMessage, AIMessageChunk, AnyMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
-from langgraph.graph.state import CompiledStateGraph
+from langgraph.pregel import Pregel
 from langgraph.types import Command, Interrupt
 from langsmith import Client as LangsmithClient
 
@@ -97,9 +95,7 @@ async def info() -> ServiceMetadata:
     )
 
 
-async def _handle_input(
-    user_input: UserInput, agent: CompiledStateGraph
-) -> tuple[dict[str, Any], UUID]:
+async def _handle_input(user_input: UserInput, agent: Pregel) -> tuple[dict[str, Any], UUID]:
     """
     Parse user input and handle any required interrupt resumption.
     Returns kwargs for agent invocation and the run_id.
@@ -128,6 +124,7 @@ async def _handle_input(
         task for task in state.tasks if hasattr(task, "interrupts") and task.interrupts
     ]
 
+    input: Command | dict[str, Any]
     if interrupted_tasks:
         # assume user input is response to resume agent execution from interrupt
         input = Command(resume=user_input.message)
@@ -157,7 +154,7 @@ async def invoke(user_input: UserInput, agent_id: str = DEFAULT_AGENT) -> ChatMe
     # in interrupt-agent, or a tool step in research-assistant), it's omitted. Arguably,
     # you'd want to include it. You could update the API to return a list of ChatMessages
     # in that case.
-    agent: CompiledStateGraph = get_agent(agent_id)
+    agent: Pregel = get_agent(agent_id)
     kwargs, run_id = await _handle_input(user_input, agent)
     try:
         # update config.callbacks with langfuse handler
@@ -198,7 +195,7 @@ async def message_generator(
 
     This is the workhorse method for the /stream endpoint.
     """
-    agent: CompiledStateGraph = get_agent(agent_id)
+    agent: Pregel = get_agent(agent_id)
     kwargs, run_id = await _handle_input(user_input, agent)
 
     try:
@@ -226,6 +223,7 @@ async def message_generator(
                         for interrupt in updates:
                             new_messages.append(AIMessage(content=interrupt.value))
                         continue
+                    updates = updates or {}
                     update_messages = updates.get("messages", [])
                     # special cases for using langgraph-supervisor library
                     if node == "supervisor":
@@ -276,22 +274,14 @@ async def message_generator(
                     # that the model is asking for a tool to be invoked.
                     # So we only print non-empty content.
                     yield f"data: {json.dumps({'type': 'token', 'content': convert_message_content_to_string(content)})}\n\n"
-    except GeneratorExit:
-        # Handle GeneratorExit gracefully
-        logger.info("Stream closed by client")
-        return
-    except CancelledError:
-        # Handle CancelledError gracefully
-        logger.info("Stream cancelled")
-        return
     except Exception as e:
         logger.error(f"Error in message generator: {e}")
-        yield f"data: {json.dumps({'type': 'error', 'content': str(e)})}\n\n"
+        yield f"data: {json.dumps({'type': 'error', 'content': 'Internal server error'})}\n\n"
     finally:
         yield "data: [DONE]\n\n"
 
 
-def _sse_response_example() -> dict[int, Any]:
+def _sse_response_example() -> dict[int | str, Any]:
     return {
         status.HTTP_200_OK: {
             "description": "Server Sent Event Response",
@@ -353,7 +343,7 @@ def history(input: ChatHistoryInput) -> ChatHistory:
     Get chat history.
     """
     # TODO: Hard-coding DEFAULT_AGENT here is wonky
-    agent: CompiledStateGraph = get_agent(DEFAULT_AGENT)
+    agent: Pregel = get_agent(DEFAULT_AGENT)
     try:
         state_snapshot = agent.get_state(
             config=RunnableConfig(
