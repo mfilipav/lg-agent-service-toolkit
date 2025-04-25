@@ -218,7 +218,9 @@ class AgentClient:
             Generator[ChatMessage | str, None, None]: The response from the agent
         """
         if not self.agent:
-            raise AgentClientError("No agent selected. Use update_agent() to select an agent.")
+            raise AgentClientError(
+                "No agent selected. Use update_agent() to select an agent."
+            )
         request = StreamInput(message=message, stream_tokens=stream_tokens)
         if thread_id:
             request.thread_id = thread_id
@@ -271,7 +273,9 @@ class AgentClient:
             AsyncGenerator[ChatMessage | str, None]: The response from the agent
         """
         if not self.agent:
-            raise AgentClientError("No agent selected. Use update_agent() to select an agent.")
+            raise AgentClientError(
+                "No agent selected. Use update_agent() to select an agent."
+            )
         request = StreamInput(message=message, stream_tokens=stream_tokens)
         if thread_id:
             request.thread_id = thread_id

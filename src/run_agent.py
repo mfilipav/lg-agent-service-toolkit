@@ -19,14 +19,13 @@ async def main() -> None:
     )
     result["messages"][-1].pretty_print()
 
-    # Draw the agent graph as png
-    # requires:
+    # Draw the agent graph as png.
+    # Requires:
     # brew install graphviz
     # export CFLAGS="-I $(brew --prefix graphviz)/include"
     # export LDFLAGS="-L $(brew --prefix graphviz)/lib"
     # pip install pygraphviz
-    #
-    # agent.get_graph().draw_png("agent_diagram.png")
+    agent.get_graph().draw_png("agent_diagram.png")
 
 
 if __name__ == "__main__":

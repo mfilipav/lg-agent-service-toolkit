@@ -21,7 +21,9 @@ def validate_postgres_config() -> None:
         "POSTGRES_DB",
     ]
 
-    missing = [var for var in required_vars if not getattr(settings, var, None)]
+    missing = [
+        var for var in required_vars if not getattr(settings, var, None)
+    ]
     if missing:
         raise ValueError(
             f"Missing required PostgreSQL configuration: {', '.join(missing)}. "
