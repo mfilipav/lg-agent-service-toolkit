@@ -70,6 +70,7 @@ class AgentClient:
 
         self.info = ServiceMetadata.model_validate(response.json())
         if not self.agent or self.agent not in [a.key for a in self.info.agents]:
+            print("WARNING: MISSING OR UNKNOWN AGENT. Using default agent.")
             self.agent = self.info.default_agent
 
     def update_agent(self, agent: str, verify: bool = True) -> None:
@@ -230,8 +231,8 @@ class AgentClient:
             request.agent_config = agent_config
         try:
             with httpx.stream(
-                "POST",
-                f"{self.base_url}/{self.agent}/stream",
+                method="POST",
+                url=f"{self.base_url}/{self.agent}/stream",
                 json=request.model_dump(),
                 headers=self._headers,
                 timeout=self.timeout,
