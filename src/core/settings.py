@@ -35,8 +35,8 @@ class DatabaseType(StrEnum):
 
 
 def check_str_is_http(x: str) -> str:
-    http_url_adapter = TypeAdapter(HttpUrl)
-    return str(http_url_adapter.validate_python(x))
+    http_url_adapter = TypeAdapter(type=HttpUrl)
+    return str(http_url_adapter.validate_python(object=x))
 
 
 class Settings(BaseSettings):

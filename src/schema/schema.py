@@ -38,7 +38,8 @@ class ServiceMetadata(BaseModel):
 
 
 class UserInput(BaseModel):
-    """Basic user input for the agent."""
+    """Basic user input for the agent.
+    Note that `Field.default=None` is needed to infer that field is optional."""
 
     message: str = Field(
         description="User input to the agent.",

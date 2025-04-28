@@ -5,6 +5,8 @@
 
 A full toolkit for running an AI agent service built with LangGraph, FastAPI and Streamlit.
 
+Serve the LangGraph agent as a REST API: this toolkit packages your LangGraph agent and exposes it as a production-ready REST API. This makes it easy to interact with your agent from any client, be it a web app, mobile app, or external service.
+
 It includes a [LangGraph](https://langchain-ai.github.io/langgraph/) agent, a [FastAPI](https://fastapi.tiangolo.com/) service to serve it, a client to interact with the service, and a [Streamlit](https://streamlit.io/) app that uses the client to provide a chat interface. Data structures and settings are built with [Pydantic](https://github.com/pydantic/pydantic).
 
 This project offers a template for you to easily build and run your own agents using the LangGraph framework. It demonstrates a complete setup from agent definition to user interface, making it easier to get started with LangGraph-based projects by providing a full, robust toolkit.

@@ -116,14 +116,15 @@ class AgentClient:
             try:
                 response = await client.post(
                     f"{self.base_url}/{self.agent}/invoke",
-                    json=request.model_dump(),
+                    json=request.model_dump(),  # generate a dict from model `UserInput`
                     headers=self._headers,
                     timeout=self.timeout,
                 )
                 response.raise_for_status()
             except httpx.HTTPError as e:
                 raise AgentClientError(f"Error: {e}")
-
+        # validate `response` against Pydantic model `ChatMessage`
+        # could use `model_validate_json(response)` instead?
         return ChatMessage.model_validate(response.json())
 
     def invoke(
@@ -348,5 +349,6 @@ class AgentClient:
             response.raise_for_status()
         except httpx.HTTPError as e:
             raise AgentClientError(f"Error: {e}")
-
+        # alternatively, use TypeAdapter(list[ChatMessage]) and
+        # adapter.validate_python(response.json())
         return ChatHistory.model_validate(response.json())

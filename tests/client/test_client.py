@@ -306,7 +306,9 @@ def test_info(agent_client):
         models=[OpenAIModelName.GPT_4O, OpenAIModelName.GPT_4O_MINI],
     )
     test_response = Response(
-        200, json=test_info.model_dump(), request=Request("GET", "http://test/info")
+        200,
+        json=test_info.model_dump(),
+        request=Request("GET", "http://test/info")
     )
 
     # Update an existing client with info

@@ -359,7 +359,7 @@ async def handle_feedback() -> None:
         st.session_state.last_feedback = (None, None)
 
     latest_run_id = st.session_state.messages[-1].run_id
-    feedback = st.feedback("faces", key=latest_run_id)
+    feedback = st.feedback("stars", key=latest_run_id)
 
     # If the feedback value or run ID has changed, send a new feedback record
     if feedback is not None and (latest_run_id, feedback) != st.session_state.last_feedback:

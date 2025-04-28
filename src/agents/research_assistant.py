@@ -104,7 +104,8 @@ async def block_unsafe_content(state: AgentState, config: RunnableConfig) -> Age
 
 
 # Define the graph
-agent = StateGraph(AgentState)
+# see https://langchain-ai.github.io/langgraph/how-tos/input_output_schema/#define-and-use-the-graph
+agent = StateGraph(state_schema=AgentState)
 agent.add_node("model", acall_model)
 agent.add_node("tools", ToolNode(tools))
 agent.add_node("guard_input", llama_guard_input)
